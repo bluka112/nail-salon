@@ -8,7 +8,7 @@ export const GET = async () => {
     where: { status: Status.active },
   });
 
-  return result;
+  return NextResponse.json(result);
 };
 export const POST = async (req: NextRequest) => {
   const { isAuthenticated } = await auth();
@@ -17,5 +17,5 @@ export const POST = async (req: NextRequest) => {
   }
   const body = await req.json();
   const result = await prisma.branch.create({ data: body });
-  return result;
+  return NextResponse.json(result);
 };
