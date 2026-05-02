@@ -9,7 +9,7 @@ import { SearchParams } from 'nuqs/server';
 import { productInfoContent } from '@/config/infoconfig';
 
 export const metadata = {
-  title: 'Dashboard: Products'
+  title: 'Admin: Products'
 };
 
 type pageProps = {

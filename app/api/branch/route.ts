@@ -13,7 +13,7 @@ export const GET = async () => {
 export const POST = async (req: NextRequest) => {
   const { isAuthenticated } = await auth();
   if (!isAuthenticated) {
-    return NextResponse.json({ message: "you are not authenticated" });
+    return NextResponse.json({ message: "you are not authenticated" }, { status: 401 });
   }
   const body = await req.json();
   const result = await prisma.branch.create({ data: body });
