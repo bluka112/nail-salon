@@ -77,6 +77,14 @@ export const columns: ColumnDef<Product>[] = [
 
   {
     id: 'actions',
-    cell: ({ row }) => <CellAction data={row.original} />
+    header: () => <span className='sr-only'>Actions</span>,
+    cell: ({ row }) => (
+      <div className='flex justify-end'>
+        <CellAction data={row.original} />
+      </div>
+    ),
+    size: 48,
+    enableSorting: false,
+    enableHiding: false
   }
 ];
