@@ -166,8 +166,8 @@ export const billingInfoContent: InfobarContent = {
   ]
 };
 
-export const productInfoContent: InfobarContent = {
-  title: 'Product Management',
+export const branchInfoContent: InfobarContent = {
+  title: 'Branch Management',
   sections: [
     {
       title: 'Overview',

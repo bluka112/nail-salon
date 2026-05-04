@@ -11,11 +11,26 @@ export const DELETE = async (
     return NextResponse.json({ message: "you are not authenticated" });
   }
   const { id } = await params;
-  const find = prisma.branch.findUnique({ where: { id } });
+  const find = await prisma.branch.findUnique({ where: { id } });
   if (find == null) {
     return NextResponse.json({ message: "not found" });
   }
   await prisma.branch.delete({ where: { id } });
+  return NextResponse.json(find);
+};
+export const GET = async (
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) => {
+  const { isAuthenticated } = await auth();
+  if (!isAuthenticated) {
+    return NextResponse.json({ message: "you are not authenticated" });
+  }
+  const { id } = await params;
+  const find = await prisma.branch.findUnique({ where: { id } });
+  if (find == null) {
+    return NextResponse.json({ message: "not found" });
+  }
   return NextResponse.json(find);
 };
 

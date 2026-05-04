@@ -87,8 +87,10 @@ import {
   IconUsers,
   IconVideo,
   IconCrown,
-  IconX
-} from '@tabler/icons-react';
+  IconX,
+  IconBuildingBridge2,
+  IconBuilding,
+} from "@tabler/icons-react";
 
 export type Icon = React.ComponentType<IconProps>;
 
@@ -187,6 +189,8 @@ export const Icons = {
   billing: IconCreditCard,
   creditCard: IconCreditCard,
   product: IconBox,
+  building: IconBuilding,
+  
   pro: IconCrown,
   exclusive: IconStar,
   sparkles: IconSparkles,
@@ -219,5 +223,5 @@ export const Icons = {
   slash: IconSlash,
   calendar: IconCalendar,
   galleryVerticalEnd: IconStack2,
-  moreHorizontal: IconDots
+  moreHorizontal: IconDots,
 };

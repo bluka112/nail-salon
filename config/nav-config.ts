@@ -13,9 +13,9 @@ export const navGroups: NavGroup[] = [
         items: []
       },
       {
-        title: 'Product',
-        url: '/admin/product',
-        icon: 'product',
+        title: 'Branch',
+        url: '/admin/branch',
+        icon: 'building',
         isActive: false,
         shortcut: ['p', 'p'],
         items: []
