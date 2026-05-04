@@ -18,12 +18,21 @@ enum Status {
 }
 
 model Branch {
-  id          String @id @default(nanoid())
+  id          String     @id @default(nanoid())
   name        String
   location    String
   phoneNumber String
   image       String
   latitude    Float
   longitude   Float
-  status      Status @default(active)
+  status      Status     @default(active)
+  employees   Employee[]
+}
+
+model Employee {
+  id          String @id @default(nanoid())
+  name        String
+  branch      Branch @relation(fields: [branchId], references: [id])
+  branchId    String
+  phoneNumber String
 }
