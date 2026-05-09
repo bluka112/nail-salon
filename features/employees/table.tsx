@@ -57,7 +57,7 @@ const columns: ColumnDef<Employee>[] = [
     header: ({ column }: { column: Column<Employee, unknown> }) => (
       <DataTableColumnHeader column={column} title="Branch" />
     ),
-    cell: ({ cell }) => <div>{cell.row.original.branch.name}</div>,
+    cell: ({ cell }) => <div>{cell.row.original.branch?.name ?? "—"}</div>,
   },
   {
     id: "actions",
@@ -124,7 +124,7 @@ export function EmployeeTable() {
             })
           }
         >
-          <SelectTrigger className="w-[220px]">
+          <SelectTrigger className="w-55">
             <SelectValue placeholder="All branches" />
           </SelectTrigger>
           <SelectContent>
