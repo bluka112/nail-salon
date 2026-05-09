@@ -1,4 +1,9 @@
+// Per-row dropdown (Update / Delete). Toast + dialog close are passed to
+// `mutate()` directly so they don't override the cache-invalidation
+// `onSuccess` defined on `deleteBranchMutation` — both run.
+
 "use client";
+
 import { AlertModal } from "@/components/modal/alert-modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,33 +18,31 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Branch } from "@/lib/generated/prisma/browser";
-import { deleteBranchMutation } from "../../api/mutations";
+import type { Branch } from "@/lib/generated/prisma/browser";
+import { deleteBranchMutation } from "@/features/branches/api";
 
-interface CellActionProps {
-  data: Branch;
-}
+type Props = { data: Branch };
 
-export function CellAction({ data }: CellActionProps) {
+export function CellAction({ data }: Props) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const deleteMutation = useMutation(deleteBranchMutation);
 
-  const deleteMutation = useMutation({
-    ...deleteBranchMutation,
-    onSuccess: () => {
-      toast.success("Branch deleted successfully");
-      setOpen(false);
-    },
-    onError: () => {
-      toast.error("Failed to delete branch");
-    },
-  });
+  const handleDelete = () =>
+    deleteMutation.mutate(data.id, {
+      onSuccess: () => {
+        toast.success("Branch deleted");
+        setOpen(false);
+      },
+      onError: () => toast.error("Failed to delete branch"),
+    });
+
   return (
     <>
       <AlertModal
         isOpen={open}
         onClose={() => setOpen(false)}
-        onConfirm={() => deleteMutation.mutate(data.id)}
+        onConfirm={handleDelete}
         loading={deleteMutation.isPending}
       />
       <DropdownMenu modal={false}>

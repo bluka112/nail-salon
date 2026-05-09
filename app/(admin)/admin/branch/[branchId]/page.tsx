@@ -1,28 +1,16 @@
-import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
-import { getQueryClient } from "@/lib/query-client";
 import PageContainer from "@/components/layout/page-container";
-import ProductViewPage from "@/features/branches/components/branch-view-page";
-import { branchByIdOptions } from "@/features/branches/api/queries";
-export const metadata = {
-  title: "Admin: Product",
-};
+import BranchViewPage from "@/features/branches/view-page";
 
-type PageProps = { params: Promise<{ branchId: string }> };
+export const metadata = { title: "Admin: Branch" };
 
-export default async function Page(props: PageProps) {
-  const params = await props.params;
-  const queryClient = getQueryClient();
+type Props = { params: Promise<{ branchId: string }> };
 
-  if (params.branchId !== "new") {
-    void queryClient.prefetchQuery(branchByIdOptions(params.branchId));
-  }
-
+export default async function Page({ params }: Props) {
+  const { branchId } = await params;
   return (
     <PageContainer>
       <div className="flex-1 space-y-4">
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <ProductViewPage branchId={params.branchId} />
-        </HydrationBoundary>
+        <BranchViewPage branchId={branchId} />
       </div>
     </PageContainer>
   );

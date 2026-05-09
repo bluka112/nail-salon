@@ -1,25 +1,14 @@
 import PageContainer from "@/components/layout/page-container";
 import { buttonVariants } from "@/components/ui/button";
-import { searchParamsCache } from "@/lib/searchparams";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/icons";
 import Link from "next/link";
-import { SearchParams } from "nuqs/server";
 import { branchInfoContent } from "@/config/infoconfig";
-import BranchListingPage from "@/features/branches/components/branch-listing";
+import { BranchTable } from "@/features/branches/table";
 
-export const metadata = {
-  title: "Admin: Products",
-};
+export const metadata = { title: "Admin: Branches" };
 
-type pageProps = {
-  searchParams: Promise<SearchParams>;
-};
-
-export default async function Page(props: pageProps) {
-  const searchParams = await props.searchParams;
-  searchParamsCache.parse(searchParams);
-
+export default function Page() {
   return (
     <PageContainer
       pageTitle="Branches"
@@ -34,7 +23,7 @@ export default async function Page(props: pageProps) {
         </Link>
       }
     >
-      <BranchListingPage />
+      <BranchTable />
     </PageContainer>
   );
 }
