@@ -11,7 +11,10 @@ export const DELETE = async (
     return NextResponse.json({ message: "you are not authenticated" });
   }
   const { id } = await params;
-  const find = await prisma.employee.findUnique({ where: { id } });
+  const find = await prisma.employee.findUnique({
+    where: { id },
+    include: { branch: true },
+  });
   if (find == null) {
     return NextResponse.json({ message: "not found" });
   }
@@ -27,11 +30,14 @@ export const GET = async (
     return NextResponse.json({ message: "you are not authenticated" });
   }
   const { id } = await params;
-  const find = await prisma.employee.findUnique({ where: { id } });
+  const find = await prisma.employee.findUnique({
+    where: { id },
+    include: { branch: true },
+  });
   if (find == null) {
     return NextResponse.json({ message: "not found" });
   }
-  return NextResponse.json(find);
+  return NextResponse.json({ employee: find });
 };
 
 export const PATCH = async (
@@ -44,13 +50,15 @@ export const PATCH = async (
   }
   const { id } = await params;
   const body = await req.json();
+  const { branchId, ...restBody } = body;
   const find = await prisma.employee.findUnique({ where: { id } });
   if (find == null) {
     return NextResponse.json({ message: "not found" });
   }
   const result = await prisma.employee.update({
     where: { id },
-    data: { ...body, branch: { connect: { id: body.branch } } },
+    data: { ...restBody, branch: { connect: { id: branchId } } },
+    include: { branch: true },
   });
   return NextResponse.json(result);
 };

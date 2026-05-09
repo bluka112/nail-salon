@@ -1,7 +1,4 @@
-import { Employee } from "./../../../lib/generated/prisma/client";
-import { BranchWhereInput } from "./../../../lib/generated/prisma/models/Branch";
 import { Prisma } from "@/lib/generated/prisma/browser";
-import { Status } from "@/lib/generated/prisma/enums";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -21,6 +18,7 @@ export const GET = async (req: NextRequest) => {
     const total = await prisma.employee.count({ where });
     const result = await prisma.employee.findMany({
       where,
+      include: { branch: true },
       skip: (Number(page) - 1) * Number(limit),
       take: Number(limit),
     });
@@ -54,8 +52,10 @@ export const POST = async (req: NextRequest) => {
     );
   }
   const body = await req.json();
+  const { branchId, ...restBody } = body;
   const result = await prisma.employee.create({
-    data: { ...body, branch: { connect: { id: body.branch } } },
+    data: { ...restBody, branch: { connect: { id: branchId } } },
+    include: { branch: true },
   });
   return NextResponse.json(result);
 };
