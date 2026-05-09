@@ -18,7 +18,10 @@ const numericRange = (min: number, max: number, label: string) =>
     .transform(Number);
 
 export const branchSchema = z.object({
-  image: z.string(),
+  // Holds File[] in form state while picking. The form's onSubmit POSTs the
+  // file to /api/image and replaces this with the returned URL string before
+  // calling the mutation, so the mutation never sees a File.
+  image: z.any().optional(),
   name: z.string().min(2, "Branch name must be at least 2 characters."),
   location: z.string().min(10, "Location must be at least 10 characters."),
   phoneNumber: z.string().regex(usPhoneRegex, "Invalid US phone number"),

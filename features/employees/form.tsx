@@ -8,7 +8,7 @@
 import { useAppForm, useFormFields } from "@/components/ui/tanstack-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -20,6 +20,7 @@ import {
   createEmployeeMutation,
   updateEmployeeMutation,
 } from "@/features/employees/api";
+import { branchesQueryOptions } from "@/features/branches/api";
 
 type Props = {
   initialData: Employee | null;
@@ -33,6 +34,14 @@ export default function EmployeeForm({ initialData, pageTitle }: Props) {
   const createMutation = useMutation(createEmployeeMutation);
   const updateMutation = useMutation(updateEmployeeMutation);
 
+  const { data: branchesData, isPending: branchesLoading } = useQuery(
+    branchesQueryOptions({ limit: 100 }),
+  );
+  const branchOptions = (branchesData?.branches ?? []).map((b) => ({
+    value: b.id,
+    label: b.name,
+  }));
+
   const form = useAppForm({
     defaultValues: {
       branchId: initialData?.branchId ?? "",
@@ -40,6 +49,7 @@ export default function EmployeeForm({ initialData, pageTitle }: Props) {
       phoneNumber: initialData?.phoneNumber ?? "",
     } satisfies EmployeeFormValues,
     validators: {
+      onChange: employeeSchema,
       onBlur: employeeSchema,
       onSubmit: employeeSchema,
     },
@@ -69,7 +79,7 @@ export default function EmployeeForm({ initialData, pageTitle }: Props) {
     },
   });
 
-  const { FormTextField, FormTextareaField } =
+  const { FormTextField, FormSelectField } =
     useFormFields<EmployeeFormValues>();
 
   return (
@@ -95,11 +105,14 @@ export default function EmployeeForm({ initialData, pageTitle }: Props) {
                 required
                 placeholder="Enter phone number"
               />
-              <FormTextField
+              <FormSelectField
                 name="branchId"
                 label="Branch"
                 required
-                placeholder="Enter branch"
+                placeholder={
+                  branchesLoading ? "Loading branches..." : "Select a branch"
+                }
+                options={branchOptions}
               />
             </div>
 

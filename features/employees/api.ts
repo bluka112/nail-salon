@@ -16,6 +16,7 @@ export type EmployeeFilters = {
   limit?: number;
   search?: string;
   sort?: string;
+  branchId?: string;
 };
 
 export type EmployeeListResponse = {
@@ -50,6 +51,7 @@ function buildQuery(filters: EmployeeFilters) {
   if (filters.limit) params.set("limit", String(filters.limit));
   if (filters.search) params.set("search", filters.search);
   if (filters.sort) params.set("sort", filters.sort);
+  if (filters.branchId) params.set("branchId", filters.branchId);
   const qs = params.toString();
   return qs ? `?${qs}` : "";
 }

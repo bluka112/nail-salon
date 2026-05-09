@@ -9,9 +9,9 @@ export const GET = async (req: NextRequest) => {
   const limit = searchParams.get("limit") || 10;
   const search = searchParams.get("search") || "";
   const time = new Date().toISOString();
-  const branch = searchParams.get("branch");
+  const branchId = searchParams.get("branchId");
   const where: Prisma.EmployeeWhereInput = {
-    ...(branch && { branchId: branch }),
+    ...(branchId && { branchId }),
     name: { contains: search, mode: "insensitive" },
   };
   try {

@@ -20,6 +20,7 @@ import {
   createBranchMutation,
   updateBranchMutation,
 } from "@/features/branches/api";
+import { uploadImage } from "@/lib/upload-image";
 
 type Props = {
   initialData: Branch | null;
@@ -35,7 +36,7 @@ export default function BranchForm({ initialData, pageTitle }: Props) {
 
   const form = useAppForm({
     defaultValues: {
-      image: initialData?.image ?? "",
+      image: undefined,
       name: initialData?.name ?? "",
       location: initialData?.location ?? "",
       phoneNumber: initialData?.phoneNumber ?? "",
@@ -45,13 +46,29 @@ export default function BranchForm({ initialData, pageTitle }: Props) {
         initialData?.longitude !== undefined
           ? String(initialData.longitude)
           : "",
-    } satisfies BranchFormValues,
+    } as BranchFormValues,
     validators: {
+      onChange: branchSchema,
       onBlur: branchSchema,
       onSubmit: branchSchema,
     },
-    onSubmit: ({ value }) => {
-      const payload = branchSchema.parse(value);
+    onSubmit: async ({ value }) => {
+      const parsed = branchSchema.parse(value);
+
+      // FileUploader stores File[]. If the user picked a new file, POST it
+      // to /api/image and use the returned URL. Otherwise keep the existing
+      // image (edit) or empty string (create).
+      const file = (parsed.image as File[] | undefined)?.[0];
+      let imageUrl = initialData?.image ?? "";
+      if (file instanceof File) {
+        try {
+          imageUrl = await uploadImage(file);
+        } catch {
+          toast.error("Image upload failed");
+          return;
+        }
+      }
+      const payload = { ...parsed, image: imageUrl };
 
       const handlers = {
         onSuccess: () => {
@@ -76,7 +93,8 @@ export default function BranchForm({ initialData, pageTitle }: Props) {
     },
   });
 
-  const { FormTextField, FormTextareaField } = useFormFields<BranchFormValues>();
+  const { FormTextField, FormTextareaField, FormFileUploadField } =
+    useFormFields<BranchFormValues>();
 
   return (
     <Card className="mx-auto w-full">
@@ -88,6 +106,14 @@ export default function BranchForm({ initialData, pageTitle }: Props) {
       <CardContent>
         <form.AppForm>
           <form.Form className="space-y-8">
+            <FormFileUploadField
+              name="image"
+              label="Branch Image"
+              description="Upload a branch image"
+              maxSize={5 * 1024 * 1024}
+              maxFiles={1}
+            />
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormTextField
                 name="name"
