@@ -112,7 +112,7 @@ export function EmployeeTable() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-1 flex-col gap-4">
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium">Branch:</span>
         <Select

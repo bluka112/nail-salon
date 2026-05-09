@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "api.slingacademy.com" },
       { protocol: "https", hostname: "img.clerk.com" },
       { protocol: "https", hostname: "clerk.com" },
+      { protocol: "https", hostname: "jrgpmsxkdrwzz7hm.public.blob.vercel-storage.com" },
     ],
   },
 };
