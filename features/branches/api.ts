@@ -6,7 +6,7 @@
 
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
-import type { Branch, Prisma } from "@/lib/generated/prisma/browser";
+import type { Branch, Prisma } from "@/lib/generated/prisma/client";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

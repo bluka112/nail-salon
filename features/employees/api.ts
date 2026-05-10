@@ -6,7 +6,7 @@
 
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/query-client";
-import type { Prisma } from "@/lib/generated/prisma/browser";
+import type { Prisma } from "@/lib/generated/prisma/client";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 export type Employee = Prisma.EmployeeGetPayload<{ include: { branch: true } }>;

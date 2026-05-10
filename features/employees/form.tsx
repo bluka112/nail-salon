@@ -15,7 +15,7 @@ import {
   EmployeeFormValues,
   employeeSchema,
 } from "@/features/employees/schema";
-import type { Employee } from "@/lib/generated/prisma/browser";
+import type { Employee } from "@/lib/generated/prisma/client";
 import {
   createEmployeeMutation,
   updateEmployeeMutation,

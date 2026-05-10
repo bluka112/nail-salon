@@ -5,28 +5,29 @@ import { NextRequest, NextResponse } from "next/server";
 export const GET = async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
   const page = Number(params.get("page") ?? 1);
-  const limit = Number(params.get("limit") ?? 10);
+  const limit = Number(params.get("limit") ?? 20);
   const search = params.get("search") ?? "";
-  const branchId = params.get("branchId");
+  const category = params.get("category");
   const status = params.get("status");
+  const featured = params.get("featured");
 
-  const where: Prisma.EmployeeWhereInput = {
-    ...(branchId && { branchId }),
+  const where: Prisma.GalleryImageWhereInput = {
+    ...(category && { category }),
     ...(status && { status: status as "active" | "disabled" }),
+    ...(featured === "true" && { featured: true }),
     OR: [
-      { name: { contains: search, mode: "insensitive" } },
       { title: { contains: search, mode: "insensitive" } },
+      { category: { contains: search, mode: "insensitive" } },
     ],
   };
 
-  const [total, employees] = await Promise.all([
-    prisma.employee.count({ where }),
-    prisma.employee.findMany({
+  const [total, images] = await Promise.all([
+    prisma.galleryImage.count({ where }),
+    prisma.galleryImage.findMany({
       where,
-      include: { branch: true },
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     }),
   ]);
 
@@ -34,31 +35,31 @@ export const GET = async (req: NextRequest) => {
     success: true,
     message: "Success",
     total,
-    employees,
+    images,
   });
 };
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { branchId, ...rest } = await req.json();
+    const body = await req.json();
 
-    const employee = await prisma.employee.create({
-      data: {
-        ...rest,
-        branch: { connect: { id: branchId } },
-      },
-      include: { branch: true },
+    const image = await prisma.galleryImage.create({
+      data: body,
     });
 
     return NextResponse.json({
       success: true,
-      message: "Employee created successfully",
-      employee,
+      message: "Gallery image created successfully",
+      image,
     });
   } catch (error) {
-    console.error("Error creating employee:", error);
+    console.error("Error creating gallery image:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to create employee", employee: null },
+      {
+        success: false,
+        message: "Failed to create gallery image",
+        image: null,
+      },
       { status: 500 },
     );
   }

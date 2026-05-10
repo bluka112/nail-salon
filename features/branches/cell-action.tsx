@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { Branch } from "@/lib/generated/prisma/browser";
+import type { Branch } from "@/lib/generated/prisma/client";
 import { deleteBranchMutation } from "@/features/branches/api";
 
 type Props = { data: Branch };

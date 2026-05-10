@@ -7,19 +7,18 @@ export const GET = async (
 ) => {
   const { id } = await params;
   
-  const employee = await prisma.employee.findUnique({
+  const service = await prisma.service.findUnique({
     where: { id },
-    include: { branch: true },
   });
 
-  if (!employee) {
+  if (!service) {
     return NextResponse.json(
-      { success: false, message: "Employee not found", employee: null },
+      { success: false, message: "Service not found", service: null },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ success: true, employee });
+  return NextResponse.json({ success: true, service });
 };
 
 export const PATCH = async (
@@ -28,29 +27,24 @@ export const PATCH = async (
 ) => {
   const { id } = await params;
   const body = await req.json();
-  const { branchId, ...restBody } = body;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.service.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Service not found" },
       { status: 404 }
     );
   }
 
-  const employee = await prisma.employee.update({
+  const service = await prisma.service.update({
     where: { id },
-    data: { 
-      ...restBody, 
-      ...(branchId && { branch: { connect: { id: branchId } } })
-    },
-    include: { branch: true },
+    data: body,
   });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee updated successfully", 
-    employee 
+    message: "Service updated successfully", 
+    service 
   });
 };
 
@@ -60,18 +54,18 @@ export const DELETE = async (
 ) => {
   const { id } = await params;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.service.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Service not found" },
       { status: 404 }
     );
   }
 
-  await prisma.employee.delete({ where: { id } });
+  await prisma.service.delete({ where: { id } });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee deleted successfully" 
+    message: "Service deleted successfully" 
   });
 };

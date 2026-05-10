@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -17,22 +15,136 @@ enum Status {
   disabled
 }
 
+enum BookingStatus {
+  pending
+  confirmed
+  completed
+  cancelled
+}
+
+enum ServiceCategory {
+  manicure
+  pedicure
+  gel_acrylic
+  nail_art
+  spa
+  additional
+}
+
 model Branch {
   id          String     @id @default(nanoid())
   name        String
   location    String
   phoneNumber String
-  image       String
-  latitude    Float
-  longitude   Float
+  image       String?
+  latitude    Float?
+  longitude   Float?
+  openingTime String     @default("09:00")
+  closingTime String     @default("21:00")
   status      Status     @default(active)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   employees   Employee[]
+  bookings    Booking[]
 }
 
 model Employee {
-  id          String @id @default(nanoid())
+  id          String    @id @default(nanoid())
   name        String
-  branch      Branch @relation(fields: [branchId], references: [id])
+  title       String?
+  image       String?
+  phoneNumber String?
+  email       String?
+  specialties String[]
+  rating      Float     @default(5.0)
+  status      Status    @default(active)
+  branch      Branch    @relation(fields: [branchId], references: [id], onDelete: Cascade)
   branchId    String
-  phoneNumber String
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Service {
+  id          String           @id @default(nanoid())
+  name        String
+  description String?
+  price       Float
+  duration    Int // duration in minutes
+  category    ServiceCategory
+  image       String?
+  popular     Boolean          @default(false)
+  status      Status           @default(active)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  bookings    BookingService[]
+}
+
+model Booking {
+  id            String           @id @default(nanoid())
+  customerName  String
+  customerEmail String
+  customerPhone String
+  date          DateTime
+  time          String
+  notes         String?
+  status        BookingStatus    @default(pending)
+  totalPrice    Float
+  totalDuration Int // total duration in minutes
+  branch        Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  branchId      String
+  employee      Employee?        @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  employeeId    String?
+  services      BookingService[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model BookingService {
+  id        String  @id @default(nanoid())
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String
+  price     Float
+  duration  Int
+
+  @@unique([bookingId, serviceId])
+}
+
+model Testimonial {
+  id        String   @id @default(nanoid())
+  name      String
+  image     String?
+  rating    Int      @default(5)
+  comment   String
+  service   String?
+  featured  Boolean  @default(false)
+  status    Status   @default(active)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GalleryImage {
+  id        String   @id @default(nanoid())
+  image     String
+  title     String?
+  category  String?
+  featured  Boolean  @default(false)
+  status    Status   @default(active)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Promotion {
+  id          String   @id @default(nanoid())
+  title       String
+  description String?
+  discount    Int // percentage discount
+  code        String?  @unique
+  validFrom   DateTime
+  validUntil  DateTime
+  status      Status   @default(active)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

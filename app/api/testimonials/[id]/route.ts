@@ -7,19 +7,18 @@ export const GET = async (
 ) => {
   const { id } = await params;
   
-  const employee = await prisma.employee.findUnique({
+  const testimonial = await prisma.testimonial.findUnique({
     where: { id },
-    include: { branch: true },
   });
 
-  if (!employee) {
+  if (!testimonial) {
     return NextResponse.json(
-      { success: false, message: "Employee not found", employee: null },
+      { success: false, message: "Testimonial not found", testimonial: null },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ success: true, employee });
+  return NextResponse.json({ success: true, testimonial });
 };
 
 export const PATCH = async (
@@ -28,29 +27,24 @@ export const PATCH = async (
 ) => {
   const { id } = await params;
   const body = await req.json();
-  const { branchId, ...restBody } = body;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.testimonial.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Testimonial not found" },
       { status: 404 }
     );
   }
 
-  const employee = await prisma.employee.update({
+  const testimonial = await prisma.testimonial.update({
     where: { id },
-    data: { 
-      ...restBody, 
-      ...(branchId && { branch: { connect: { id: branchId } } })
-    },
-    include: { branch: true },
+    data: body,
   });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee updated successfully", 
-    employee 
+    message: "Testimonial updated successfully", 
+    testimonial 
   });
 };
 
@@ -60,18 +54,18 @@ export const DELETE = async (
 ) => {
   const { id } = await params;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.testimonial.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Testimonial not found" },
       { status: 404 }
     );
   }
 
-  await prisma.employee.delete({ where: { id } });
+  await prisma.testimonial.delete({ where: { id } });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee deleted successfully" 
+    message: "Testimonial deleted successfully" 
   });
 };

@@ -7,19 +7,18 @@ export const GET = async (
 ) => {
   const { id } = await params;
   
-  const employee = await prisma.employee.findUnique({
+  const promotion = await prisma.promotion.findUnique({
     where: { id },
-    include: { branch: true },
   });
 
-  if (!employee) {
+  if (!promotion) {
     return NextResponse.json(
-      { success: false, message: "Employee not found", employee: null },
+      { success: false, message: "Promotion not found", promotion: null },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ success: true, employee });
+  return NextResponse.json({ success: true, promotion });
 };
 
 export const PATCH = async (
@@ -28,29 +27,30 @@ export const PATCH = async (
 ) => {
   const { id } = await params;
   const body = await req.json();
-  const { branchId, ...restBody } = body;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.promotion.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Promotion not found" },
       { status: 404 }
     );
   }
 
-  const employee = await prisma.employee.update({
+  const updateData = {
+    ...body,
+    ...(body.validFrom && { validFrom: new Date(body.validFrom) }),
+    ...(body.validUntil && { validUntil: new Date(body.validUntil) }),
+  };
+
+  const promotion = await prisma.promotion.update({
     where: { id },
-    data: { 
-      ...restBody, 
-      ...(branchId && { branch: { connect: { id: branchId } } })
-    },
-    include: { branch: true },
+    data: updateData,
   });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee updated successfully", 
-    employee 
+    message: "Promotion updated successfully", 
+    promotion 
   });
 };
 
@@ -60,18 +60,18 @@ export const DELETE = async (
 ) => {
   const { id } = await params;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.promotion.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Promotion not found" },
       { status: 404 }
     );
   }
 
-  await prisma.employee.delete({ where: { id } });
+  await prisma.promotion.delete({ where: { id } });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee deleted successfully" 
+    message: "Promotion deleted successfully" 
   });
 };

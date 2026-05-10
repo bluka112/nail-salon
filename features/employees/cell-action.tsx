@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import type { Employee } from "@/lib/generated/prisma/browser";
+import type { Employee } from "@/lib/generated/prisma/client";
 import { deleteEmployeeMutation } from "@/features/employees/api";
 
 type Props = { data: Employee };

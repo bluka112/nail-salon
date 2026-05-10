@@ -1,72 +1,76 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const unauthorized = () =>
-  NextResponse.json(
-    { success: false, message: "you are not authenticated", branch: null },
-    { status: 401 },
-  );
-
-const notFound = () =>
-  NextResponse.json(
-    { success: false, message: "not found", branch: null },
-    { status: 404 },
-  );
-
 export const GET = async (
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { isAuthenticated } = await auth();
-  if (!isAuthenticated) return unauthorized();
-
   const { id } = await params;
-  const branch = await prisma.branch.findUnique({ where: { id } });
-  if (!branch) return notFound();
+  
+  const branch = await prisma.branch.findUnique({
+    where: { id },
+    include: { 
+      employees: { where: { status: "active" } },
+      _count: { select: { bookings: true } }
+    },
+  });
 
-  return NextResponse.json({ success: true, message: "Success", branch });
+  if (!branch) {
+    return NextResponse.json(
+      { success: false, message: "Branch not found", branch: null },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json({ success: true, branch });
 };
 
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { isAuthenticated } = await auth();
-  if (!isAuthenticated) return unauthorized();
-
   const { id } = await params;
-  const existing = await prisma.branch.findUnique({ where: { id } });
-  if (!existing) return notFound();
-
   const body = await req.json();
+
+  const existing = await prisma.branch.findUnique({ where: { id } });
+  if (!existing) {
+    return NextResponse.json(
+      { success: false, message: "Branch not found" },
+      { status: 404 }
+    );
+  }
+
   const branch = await prisma.branch.update({
     where: { id },
-    data: {
-      ...body,
-      ...(body.latitude !== undefined && { latitude: Number(body.latitude) }),
-      ...(body.longitude !== undefined && { longitude: Number(body.longitude) }),
-    },
+    data: body,
+    include: { employees: true },
   });
 
-  return NextResponse.json({ success: true, message: "Updated", branch });
+  return NextResponse.json({ 
+    success: true, 
+    message: "Branch updated successfully", 
+    branch 
+  });
 };
 
 export const DELETE = async (
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) => {
-  const { isAuthenticated } = await auth();
-  if (!isAuthenticated) return unauthorized();
-
   const { id } = await params;
+
   const existing = await prisma.branch.findUnique({ where: { id } });
-  if (!existing) return notFound();
+  if (!existing) {
+    return NextResponse.json(
+      { success: false, message: "Branch not found" },
+      { status: 404 }
+    );
+  }
 
   await prisma.branch.delete({ where: { id } });
-  return NextResponse.json({
-    success: true,
-    message: "Deleted",
-    branch: existing,
+
+  return NextResponse.json({ 
+    success: true, 
+    message: "Branch deleted successfully" 
   });
 };

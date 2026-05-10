@@ -7,26 +7,26 @@ export const GET = async (req: NextRequest) => {
   const page = Number(params.get("page") ?? 1);
   const limit = Number(params.get("limit") ?? 10);
   const search = params.get("search") ?? "";
-  const branchId = params.get("branchId");
   const status = params.get("status");
+  const featured = params.get("featured");
 
-  const where: Prisma.EmployeeWhereInput = {
-    ...(branchId && { branchId }),
+  const where: Prisma.TestimonialWhereInput = {
     ...(status && { status: status as "active" | "disabled" }),
+    ...(featured === "true" && { featured: true }),
     OR: [
       { name: { contains: search, mode: "insensitive" } },
-      { title: { contains: search, mode: "insensitive" } },
+      { comment: { contains: search, mode: "insensitive" } },
+      { service: { contains: search, mode: "insensitive" } },
     ],
   };
 
-  const [total, employees] = await Promise.all([
-    prisma.employee.count({ where }),
-    prisma.employee.findMany({
+  const [total, testimonials] = await Promise.all([
+    prisma.testimonial.count({ where }),
+    prisma.testimonial.findMany({
       where,
-      include: { branch: true },
       skip: (page - 1) * limit,
       take: limit,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
     }),
   ]);
 
@@ -34,31 +34,31 @@ export const GET = async (req: NextRequest) => {
     success: true,
     message: "Success",
     total,
-    employees,
+    testimonials,
   });
 };
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { branchId, ...rest } = await req.json();
+    const body = await req.json();
 
-    const employee = await prisma.employee.create({
-      data: {
-        ...rest,
-        branch: { connect: { id: branchId } },
-      },
-      include: { branch: true },
+    const testimonial = await prisma.testimonial.create({
+      data: body,
     });
 
     return NextResponse.json({
       success: true,
-      message: "Employee created successfully",
-      employee,
+      message: "Testimonial created successfully",
+      testimonial,
     });
   } catch (error) {
-    console.error("Error creating employee:", error);
+    console.error("Error creating testimonial:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to create employee", employee: null },
+      {
+        success: false,
+        message: "Failed to create testimonial",
+        testimonial: null,
+      },
       { status: 500 },
     );
   }

@@ -14,23 +14,23 @@ import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 import Image from "next/image";
 import { Icons } from "@/components/icons";
 import { getSortingStateParser } from "@/lib/parsers";
-import type { Branch } from "@/lib/generated/prisma/browser";
+import type { Branch } from "@/lib/generated/prisma/client";
 import { branchesQueryOptions } from "@/features/branches/api";
 import { CellAction } from "@/features/branches/cell-action";
 
 const columns: ColumnDef<Branch>[] = [
   {
     accessorKey: "image",
-    header: "IMAGE",
+    header: "Image",
     cell: ({ row }) => (
-      <div className="relative aspect-square">
+      <div className="relative aspect-square h-12 w-12">
         {row.getValue("image") ? (
           <Image
             src={row.getValue("image")}
             alt={row.getValue("name")}
             fill
             sizes="80px"
-            className="rounded-lg"
+            className="rounded-lg object-contain border"
           />
         ) : null}
       </div>
@@ -66,6 +66,18 @@ const columns: ColumnDef<Branch>[] = [
       <DataTableColumnHeader column={column} title="Location" />
     ),
     cell: ({ cell }) => <div>{cell.getValue<Branch["location"]>()}</div>,
+  },
+  {
+    id: "time",
+    accessorKey: "time",
+    header: ({ column }: { column: Column<Branch, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Time" />
+    ),
+    cell: ({ cell }) => (
+      <div>
+        {cell.row.original.openingTime}→ {cell.row.original.closingTime}
+      </div>
+    ),
   },
   {
     id: "actions",

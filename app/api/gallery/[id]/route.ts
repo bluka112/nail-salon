@@ -7,19 +7,18 @@ export const GET = async (
 ) => {
   const { id } = await params;
   
-  const employee = await prisma.employee.findUnique({
+  const image = await prisma.galleryImage.findUnique({
     where: { id },
-    include: { branch: true },
   });
 
-  if (!employee) {
+  if (!image) {
     return NextResponse.json(
-      { success: false, message: "Employee not found", employee: null },
+      { success: false, message: "Gallery image not found", image: null },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ success: true, employee });
+  return NextResponse.json({ success: true, image });
 };
 
 export const PATCH = async (
@@ -28,29 +27,24 @@ export const PATCH = async (
 ) => {
   const { id } = await params;
   const body = await req.json();
-  const { branchId, ...restBody } = body;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.galleryImage.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Gallery image not found" },
       { status: 404 }
     );
   }
 
-  const employee = await prisma.employee.update({
+  const image = await prisma.galleryImage.update({
     where: { id },
-    data: { 
-      ...restBody, 
-      ...(branchId && { branch: { connect: { id: branchId } } })
-    },
-    include: { branch: true },
+    data: body,
   });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee updated successfully", 
-    employee 
+    message: "Gallery image updated successfully", 
+    image 
   });
 };
 
@@ -60,18 +54,18 @@ export const DELETE = async (
 ) => {
   const { id } = await params;
 
-  const existing = await prisma.employee.findUnique({ where: { id } });
+  const existing = await prisma.galleryImage.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json(
-      { success: false, message: "Employee not found" },
+      { success: false, message: "Gallery image not found" },
       { status: 404 }
     );
   }
 
-  await prisma.employee.delete({ where: { id } });
+  await prisma.galleryImage.delete({ where: { id } });
 
   return NextResponse.json({ 
     success: true, 
-    message: "Employee deleted successfully" 
+    message: "Gallery image deleted successfully" 
   });
 };
