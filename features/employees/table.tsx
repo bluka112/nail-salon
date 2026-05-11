@@ -19,6 +19,8 @@ import { useDataTable } from "@/hooks/use-data-table";
 import { useQuery } from "@tanstack/react-query";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 import { Icons } from "@/components/icons";
 import { getSortingStateParser } from "@/lib/parsers";
 import { Employee, employeesQueryOptions } from "@/features/employees/api";
@@ -28,6 +30,24 @@ import { branchesQueryOptions } from "@/features/branches/api";
 const ALL_BRANCHES = "all";
 
 const columns: ColumnDef<Employee>[] = [
+  {
+    accessorKey: "image",
+    header: "Image",
+    cell: ({ row }) => (
+      <div className="relative aspect-square h-12 w-12">
+        {row.getValue("image") ? (
+          <Image
+            src={row.getValue("image")}
+            alt={row.getValue("name")}
+            fill
+            sizes="80px"
+            className="rounded-lg border object-cover"
+          />
+        ) : null}
+      </div>
+    ),
+    enableSorting: false,
+  },
   {
     id: "name",
     accessorKey: "name",
@@ -44,12 +64,63 @@ const columns: ColumnDef<Employee>[] = [
     enableColumnFilter: true,
   },
   {
+    id: "title",
+    accessorKey: "title",
+    header: ({ column }: { column: Column<Employee, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    cell: ({ cell }) => <div>{cell.getValue<Employee["title"]>() ?? "—"}</div>,
+  },
+  {
     id: "phoneNumber",
     accessorKey: "phoneNumber",
     header: ({ column }: { column: Column<Employee, unknown> }) => (
       <DataTableColumnHeader column={column} title="Phone Number" />
     ),
     cell: ({ cell }) => <div>{cell.getValue<Employee["phoneNumber"]>()}</div>,
+  },
+  {
+    id: "email",
+    accessorKey: "email",
+    header: ({ column }: { column: Column<Employee, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
+    cell: ({ cell }) => <div>{cell.getValue<Employee["email"]>() ?? "—"}</div>,
+  },
+  {
+    id: "specialties",
+    accessorKey: "specialties",
+    header: ({ column }: { column: Column<Employee, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Specialties" />
+    ),
+    cell: ({ cell }) => {
+      const specialties = cell.getValue<Employee["specialties"]>();
+      return <div>{specialties.length ? specialties.join(", ") : "—"}</div>;
+    },
+    enableSorting: false,
+  },
+  {
+    id: "rating",
+    accessorKey: "rating",
+    header: ({ column }: { column: Column<Employee, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Rating" />
+    ),
+    cell: ({ cell }) => <div>{cell.getValue<Employee["rating"]>().toFixed(1)}</div>,
+  },
+  {
+    id: "status",
+    accessorKey: "status",
+    header: ({ column }: { column: Column<Employee, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ cell }) => {
+      const status = cell.getValue<Employee["status"]>();
+      return (
+        <Badge variant={status === "active" ? "default" : "secondary"}>
+          {status}
+        </Badge>
+      );
+    },
   },
   {
     id: "branch",

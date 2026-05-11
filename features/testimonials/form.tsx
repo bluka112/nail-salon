@@ -1,35 +1,30 @@
-// Create/edit form. `initialData = null` → create mode; otherwise edit.
-// Validation lives entirely in `schema.ts` — no inline rules per field.
-// On submit we `employeeSchema.parse(value)` to get the payload with coerced
-// numbers, then call the matching mutation.
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppForm, useFormFields } from "@/components/ui/tanstack-form";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  EmployeeFormValues,
-  employeeSchema,
-} from "@/features/employees/schema";
-import type { Employee } from "@/lib/generated/prisma/client";
-import {
-  createEmployeeMutation,
-  updateEmployeeMutation,
-} from "@/features/employees/api";
-import { branchesQueryOptions } from "@/features/branches/api";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppForm, useFormFields } from "@/components/ui/tanstack-form";
+import type { Testimonial } from "@/lib/generated/prisma/client";
 import { uploadImage } from "@/lib/upload-image";
+import {
+  TestimonialFormValues,
+  testimonialSchema,
+  testimonialStatusOptions,
+} from "@/features/testimonials/schema";
+import {
+  createTestimonialMutation,
+  updateTestimonialMutation,
+} from "@/features/testimonials/api";
 
 type Props = {
-  initialData: Employee | null;
+  initialData: Testimonial | null;
   pageTitle: string;
 };
 
-export default function EmployeeForm({ initialData, pageTitle }: Props) {
+export default function TestimonialForm({ initialData, pageTitle }: Props) {
   const isEdit = !!initialData;
   const hasExistingImage = isEdit && !!initialData?.image;
   const [initialFiles, setInitialFiles] = useState<File[] | null>(
@@ -67,7 +62,7 @@ export default function EmployeeForm({ initialData, pageTitle }: Props) {
   }
 
   return (
-    <EmployeeFormInner
+    <TestimonialFormInner
       initialData={initialData}
       pageTitle={pageTitle}
       initialFiles={initialFiles}
@@ -87,44 +82,33 @@ async function urlToFile(url: string): Promise<File | null> {
   }
 }
 
-function EmployeeFormInner({
+function TestimonialFormInner({
   initialData,
   pageTitle,
   initialFiles,
 }: Props & { initialFiles: File[] }) {
   const router = useRouter();
   const isEdit = !!initialData;
-
-  const createMutation = useMutation(createEmployeeMutation);
-  const updateMutation = useMutation(updateEmployeeMutation);
-
-  const { data: branchesData, isPending: branchesLoading } = useQuery(
-    branchesQueryOptions({ limit: 100 }),
-  );
-  const branchOptions = (branchesData?.branches ?? []).map((b) => ({
-    value: b.id,
-    label: b.name,
-  }));
+  const createMutation = useMutation(createTestimonialMutation);
+  const updateMutation = useMutation(updateTestimonialMutation);
 
   const form = useAppForm({
     defaultValues: {
       image: initialFiles,
-      branchId: initialData?.branchId ?? "",
       name: initialData?.name ?? "",
-      title: initialData?.title ?? "",
-      phoneNumber: initialData?.phoneNumber ?? "",
-      email: initialData?.email ?? "",
-      specialties: initialData?.specialties.join(", ") ?? "",
       rating: initialData?.rating ?? 5,
+      comment: initialData?.comment ?? "",
+      service: initialData?.service ?? "",
+      featured: initialData?.featured ?? false,
       status: initialData?.status ?? "active",
-    } as EmployeeFormValues,
+    } as TestimonialFormValues,
     validators: {
-      onChange: employeeSchema,
-      onBlur: employeeSchema,
-      onSubmit: employeeSchema,
+      onChange: testimonialSchema,
+      onBlur: testimonialSchema,
+      onSubmit: testimonialSchema,
     },
     onSubmit: async ({ value }) => {
-      const parsed = employeeSchema.parse(value);
+      const parsed = testimonialSchema.parse(value);
       const file = Array.isArray(parsed.image) ? parsed.image[0] : undefined;
       let imageUrl = initialData?.image ?? null;
 
@@ -149,12 +133,16 @@ function EmployeeFormInner({
 
       const handlers = {
         onSuccess: () => {
-          toast.success(isEdit ? "Employee updated" : "Employee created");
-          router.push("/admin/employee");
+          toast.success(
+            isEdit ? "Testimonial updated" : "Testimonial created",
+          );
+          router.push("/admin/testimonial");
         },
         onError: () => {
           toast.error(
-            isEdit ? "Failed to update employee" : "Failed to create employee",
+            isEdit
+              ? "Failed to update testimonial"
+              : "Failed to create testimonial",
           );
         },
       };
@@ -174,8 +162,9 @@ function EmployeeFormInner({
     FormTextField,
     FormTextareaField,
     FormSelectField,
+    FormSwitchField,
     FormFileUploadField,
-  } = useFormFields<EmployeeFormValues>();
+  } = useFormFields<TestimonialFormValues>();
 
   return (
     <Card className="mx-auto w-full">
@@ -189,8 +178,8 @@ function EmployeeFormInner({
           <form.Form className="space-y-8">
             <FormFileUploadField
               name="image"
-              label="Employee Image"
-              description="Upload an employee profile image"
+              label="Customer Image"
+              description="Upload an optional customer image"
               maxSize={5 * 1024 * 1024}
               maxFiles={1}
             />
@@ -198,34 +187,22 @@ function EmployeeFormInner({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormTextField
                 name="name"
-                label="Employee Name"
+                label="Customer Name"
                 required
-                placeholder="Enter employee name"
+                placeholder="Enter customer name"
               />
               <FormTextField
-                name="title"
-                label="Title"
-                placeholder="Enter title"
-              />
-              <FormTextField
-                name="phoneNumber"
-                label="Phone Number"
-                type="tel"
-                placeholder="Enter phone number"
-              />
-              <FormTextField
-                name="email"
-                label="Email"
-                type="email"
-                placeholder="Enter email"
+                name="service"
+                label="Service"
+                placeholder="Enter service name"
               />
               <FormTextField
                 name="rating"
                 label="Rating"
                 type="number"
-                min={0}
+                min={1}
                 max={5}
-                step={0.1}
+                step={1}
                 required
                 placeholder="Enter rating"
               />
@@ -233,27 +210,22 @@ function EmployeeFormInner({
                 name="status"
                 label="Status"
                 required
-                options={[
-                  { value: "active", label: "Active" },
-                  { value: "disabled", label: "Disabled" },
-                ]}
+                options={[...testimonialStatusOptions]}
               />
-              <FormSelectField
-                name="branchId"
-                label="Branch"
-                required
-                placeholder={
-                  branchesLoading ? "Loading branches..." : "Select a branch"
-                }
-                options={branchOptions}
+              <FormSwitchField
+                name="featured"
+                label="Featured"
+                description="Feature this testimonial in prominent listings"
               />
             </div>
 
             <FormTextareaField
-              name="specialties"
-              label="Specialties"
-              placeholder="Manicure, pedicure, nail art"
-              rows={4}
+              name="comment"
+              label="Comment"
+              required
+              placeholder="Enter customer comment"
+              maxLength={1000}
+              rows={5}
             />
 
             <div className="flex justify-end gap-2">
@@ -265,7 +237,7 @@ function EmployeeFormInner({
                 Back
               </Button>
               <form.SubmitButton>
-                {isEdit ? "Update Employee" : "Add Employee"}
+                {isEdit ? "Update Testimonial" : "Add Testimonial"}
               </form.SubmitButton>
             </div>
           </form.Form>

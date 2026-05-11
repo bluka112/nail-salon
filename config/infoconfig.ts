@@ -242,3 +242,80 @@ export const branchInfoContent: InfobarContent = {
   ]
 };
 
+export const serviceInfoContent: InfobarContent = {
+  title: 'Service Management',
+  sections: [
+    {
+      title: 'Overview',
+      description:
+        'The Services page allows you to manage the salon service catalog. You can create, edit, delete, search, and filter services by category and status.',
+      links: []
+    },
+    {
+      title: 'Service Details',
+      description:
+        'Each service includes a name, optional description, price, duration, category, image, popularity flag, and active or disabled status.',
+      links: []
+    },
+    {
+      title: 'Catalog Organization',
+      description:
+        'Use categories to group services for booking flows and use the popular flag to highlight services that should receive extra visibility.',
+      links: []
+    }
+  ]
+};
+
+export const testimonialInfoContent: InfobarContent = {
+  title: 'Testimonial Management',
+  sections: [
+    {
+      title: 'Overview',
+      description:
+        'The Testimonials page allows you to manage customer quotes shown across the public salon experience.',
+      links: []
+    },
+    {
+      title: 'Display Controls',
+      description:
+        'Use status to publish or hide testimonials, and use featured to highlight testimonials in prominent sections.',
+      links: []
+    }
+  ]
+};
+
+export const galleryInfoContent: InfobarContent = {
+  title: 'Gallery Management',
+  sections: [
+    {
+      title: 'Overview',
+      description:
+        'The Gallery page allows you to manage nail art and salon images used throughout the public site.',
+      links: []
+    },
+    {
+      title: 'Organization',
+      description:
+        'Use titles and categories to keep images searchable, and use featured to highlight standout work.',
+      links: []
+    }
+  ]
+};
+
+export const promotionInfoContent: InfobarContent = {
+  title: 'Promotion Management',
+  sections: [
+    {
+      title: 'Overview',
+      description:
+        'The Promotions page allows you to manage discounts and promotional codes for the salon.',
+      links: []
+    },
+    {
+      title: 'Validity',
+      description:
+        'Use valid-from and valid-until dates to control when a promotion should count as active. Disabled promotions are hidden from active promotion filters.',
+      links: []
+    }
+  ]
+};

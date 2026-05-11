@@ -1,7 +1,6 @@
 // Create/edit form. `initialData = null` → create mode; otherwise edit.
-// Validation lives entirely in `schema.ts` — no inline rules per field.
-// On submit we `employeeSchema.parse(value)` to get the payload with coerced
-// numbers, then call the matching mutation.
+// Validation lives entirely in `schema.ts`; submit parses/transforms values
+// before calling the matching service mutation.
 
 "use client";
 
@@ -9,27 +8,28 @@ import { useEffect, useState } from "react";
 import { useAppForm, useFormFields } from "@/components/ui/tanstack-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import type { Service } from "@/lib/generated/prisma/client";
 import {
-  EmployeeFormValues,
-  employeeSchema,
-} from "@/features/employees/schema";
-import type { Employee } from "@/lib/generated/prisma/client";
+  ServiceFormValues,
+  serviceCategoryOptions,
+  serviceSchema,
+  serviceStatusOptions,
+} from "@/features/services/schema";
 import {
-  createEmployeeMutation,
-  updateEmployeeMutation,
-} from "@/features/employees/api";
-import { branchesQueryOptions } from "@/features/branches/api";
+  createServiceMutation,
+  updateServiceMutation,
+} from "@/features/services/api";
 import { uploadImage } from "@/lib/upload-image";
 
 type Props = {
-  initialData: Employee | null;
+  initialData: Service | null;
   pageTitle: string;
 };
 
-export default function EmployeeForm({ initialData, pageTitle }: Props) {
+export default function ServiceForm({ initialData, pageTitle }: Props) {
   const isEdit = !!initialData;
   const hasExistingImage = isEdit && !!initialData?.image;
   const [initialFiles, setInitialFiles] = useState<File[] | null>(
@@ -67,7 +67,7 @@ export default function EmployeeForm({ initialData, pageTitle }: Props) {
   }
 
   return (
-    <EmployeeFormInner
+    <ServiceFormInner
       initialData={initialData}
       pageTitle={pageTitle}
       initialFiles={initialFiles}
@@ -87,7 +87,7 @@ async function urlToFile(url: string): Promise<File | null> {
   }
 }
 
-function EmployeeFormInner({
+function ServiceFormInner({
   initialData,
   pageTitle,
   initialFiles,
@@ -95,36 +95,27 @@ function EmployeeFormInner({
   const router = useRouter();
   const isEdit = !!initialData;
 
-  const createMutation = useMutation(createEmployeeMutation);
-  const updateMutation = useMutation(updateEmployeeMutation);
-
-  const { data: branchesData, isPending: branchesLoading } = useQuery(
-    branchesQueryOptions({ limit: 100 }),
-  );
-  const branchOptions = (branchesData?.branches ?? []).map((b) => ({
-    value: b.id,
-    label: b.name,
-  }));
+  const createMutation = useMutation(createServiceMutation);
+  const updateMutation = useMutation(updateServiceMutation);
 
   const form = useAppForm({
     defaultValues: {
       image: initialFiles,
-      branchId: initialData?.branchId ?? "",
       name: initialData?.name ?? "",
-      title: initialData?.title ?? "",
-      phoneNumber: initialData?.phoneNumber ?? "",
-      email: initialData?.email ?? "",
-      specialties: initialData?.specialties.join(", ") ?? "",
-      rating: initialData?.rating ?? 5,
+      description: initialData?.description ?? "",
+      price: initialData?.price ?? 0,
+      duration: initialData?.duration ?? 30,
+      category: initialData?.category ?? "manicure",
+      popular: initialData?.popular ?? false,
       status: initialData?.status ?? "active",
-    } as EmployeeFormValues,
+    } as ServiceFormValues,
     validators: {
-      onChange: employeeSchema,
-      onBlur: employeeSchema,
-      onSubmit: employeeSchema,
+      onChange: serviceSchema,
+      onBlur: serviceSchema,
+      onSubmit: serviceSchema,
     },
     onSubmit: async ({ value }) => {
-      const parsed = employeeSchema.parse(value);
+      const parsed = serviceSchema.parse(value);
       const file = Array.isArray(parsed.image) ? parsed.image[0] : undefined;
       let imageUrl = initialData?.image ?? null;
 
@@ -149,12 +140,12 @@ function EmployeeFormInner({
 
       const handlers = {
         onSuccess: () => {
-          toast.success(isEdit ? "Employee updated" : "Employee created");
-          router.push("/admin/employee");
+          toast.success(isEdit ? "Service updated" : "Service created");
+          router.push("/admin/service");
         },
         onError: () => {
           toast.error(
-            isEdit ? "Failed to update employee" : "Failed to create employee",
+            isEdit ? "Failed to update service" : "Failed to create service",
           );
         },
       };
@@ -174,8 +165,9 @@ function EmployeeFormInner({
     FormTextField,
     FormTextareaField,
     FormSelectField,
+    FormSwitchField,
     FormFileUploadField,
-  } = useFormFields<EmployeeFormValues>();
+  } = useFormFields<ServiceFormValues>();
 
   return (
     <Card className="mx-auto w-full">
@@ -189,8 +181,8 @@ function EmployeeFormInner({
           <form.Form className="space-y-8">
             <FormFileUploadField
               name="image"
-              label="Employee Image"
-              description="Upload an employee profile image"
+              label="Service Image"
+              description="Upload a service image"
               maxSize={5 * 1024 * 1024}
               maxFiles={1}
             />
@@ -198,61 +190,52 @@ function EmployeeFormInner({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormTextField
                 name="name"
-                label="Employee Name"
+                label="Service Name"
                 required
-                placeholder="Enter employee name"
+                placeholder="Enter service name"
+              />
+              <FormSelectField
+                name="category"
+                label="Category"
+                required
+                options={[...serviceCategoryOptions]}
               />
               <FormTextField
-                name="title"
-                label="Title"
-                placeholder="Enter title"
-              />
-              <FormTextField
-                name="phoneNumber"
-                label="Phone Number"
-                type="tel"
-                placeholder="Enter phone number"
-              />
-              <FormTextField
-                name="email"
-                label="Email"
-                type="email"
-                placeholder="Enter email"
-              />
-              <FormTextField
-                name="rating"
-                label="Rating"
+                name="price"
+                label="Price"
                 type="number"
                 min={0}
-                max={5}
-                step={0.1}
+                step={0.01}
                 required
-                placeholder="Enter rating"
+                placeholder="Enter price"
+              />
+              <FormTextField
+                name="duration"
+                label="Duration"
+                type="number"
+                min={1}
+                step={1}
+                required
+                placeholder="Enter duration in minutes"
               />
               <FormSelectField
                 name="status"
                 label="Status"
                 required
-                options={[
-                  { value: "active", label: "Active" },
-                  { value: "disabled", label: "Disabled" },
-                ]}
+                options={[...serviceStatusOptions]}
               />
-              <FormSelectField
-                name="branchId"
-                label="Branch"
-                required
-                placeholder={
-                  branchesLoading ? "Loading branches..." : "Select a branch"
-                }
-                options={branchOptions}
+              <FormSwitchField
+                name="popular"
+                label="Popular"
+                description="Feature this service in prominent listings"
               />
             </div>
 
             <FormTextareaField
-              name="specialties"
-              label="Specialties"
-              placeholder="Manicure, pedicure, nail art"
+              name="description"
+              label="Description"
+              placeholder="Enter service description"
+              maxLength={500}
               rows={4}
             />
 
@@ -265,7 +248,7 @@ function EmployeeFormInner({
                 Back
               </Button>
               <form.SubmitButton>
-                {isEdit ? "Update Employee" : "Add Employee"}
+                {isEdit ? "Update Service" : "Add Service"}
               </form.SubmitButton>
             </div>
           </form.Form>
