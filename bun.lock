@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "nail-salon",
+      "name": "elegance",
       "dependencies": {
         "@clerk/nextjs": "^7.3.0",
         "@faker-js/faker": "^9.9.0",

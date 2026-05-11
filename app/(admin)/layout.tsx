@@ -8,8 +8,8 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: 'Nail Salon Admin',
-  description: 'Nail salon admin dashboard',
+  title: 'Elegance Admin',
+  description: 'Elegance admin dashboard',
   robots: { index: false, follow: false }
 };
 

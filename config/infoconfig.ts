@@ -248,7 +248,7 @@ export const serviceInfoContent: InfobarContent = {
     {
       title: 'Overview',
       description:
-        'The Services page allows you to manage the salon service catalog. You can create, edit, delete, search, and filter services by category and status.',
+        'The Services page allows you to manage the Elegance service catalog. You can create, edit, delete, search, and filter services by category and status.',
       links: []
     },
     {
@@ -272,7 +272,7 @@ export const testimonialInfoContent: InfobarContent = {
     {
       title: 'Overview',
       description:
-        'The Testimonials page allows you to manage customer quotes shown across the public salon experience.',
+        'The Testimonials page allows you to manage customer quotes shown across the public Elegance experience.',
       links: []
     },
     {
@@ -290,7 +290,7 @@ export const galleryInfoContent: InfobarContent = {
     {
       title: 'Overview',
       description:
-        'The Gallery page allows you to manage nail art and salon images used throughout the public site.',
+        'The Gallery page allows you to manage nail art and Elegance images used throughout the public site.',
       links: []
     },
     {
@@ -308,7 +308,7 @@ export const promotionInfoContent: InfobarContent = {
     {
       title: 'Overview',
       description:
-        'The Promotions page allows you to manage discounts and promotional codes for the salon.',
+        'The Promotions page allows you to manage discounts and promotional codes for Elegance.',
       links: []
     },
     {

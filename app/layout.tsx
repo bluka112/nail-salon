@@ -16,8 +16,8 @@ const META_THEME_COLORS = {
 };
 
 export const metadata: Metadata = {
-  title: "Nail Salon Admin",
-  description: "Nail salon admin dashboard",
+  title: "Elegance Admin",
+  description: "Elegance admin dashboard",
 };
 
 export const viewport: Viewport = {
