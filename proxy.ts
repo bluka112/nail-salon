@@ -42,6 +42,8 @@ function applyCorsHeaders(response: NextResponse, req: NextRequest) {
   }
 
   response.headers.set("Vary", "Origin");
+  response.headers.set("Content-Encoding", "identity");
+  response.headers.set("Cache-Control", "no-store, no-transform");
   response.headers.set(
     "Access-Control-Allow-Methods",
     "GET, POST, PATCH, DELETE, OPTIONS",
