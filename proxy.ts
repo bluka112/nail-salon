@@ -17,11 +17,28 @@ const allowedOrigins = new Set([
   "http://localhost:3001",
 ]);
 
+function isAllowedOrigin(origin: string) {
+  if (allowedOrigins.has(origin)) return true;
+
+  try {
+    const { protocol, hostname } = new URL(origin);
+    return (
+      protocol === "https:" &&
+      hostname.endsWith(".vercel.app") &&
+      (hostname.startsWith("nail-salon-") ||
+        hostname.startsWith("nail-salon-web-"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 function applyCorsHeaders(response: NextResponse, req: NextRequest) {
   const origin = req.headers.get("origin");
 
-  if (origin && allowedOrigins.has(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     response.headers.set("Access-Control-Allow-Origin", origin);
+    response.headers.set("Access-Control-Allow-Credentials", "true");
   }
 
   response.headers.set("Vary", "Origin");
