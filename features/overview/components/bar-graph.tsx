@@ -12,42 +12,41 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Icons } from '@/components/icons';
 
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 }
-];
+type MonthlyBookingStat = {
+  month: string;
+  bookings: number;
+  revenue: number;
+};
 
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
+  bookings: {
+    label: 'Bookings',
     color: 'var(--chart-1)'
   },
-  mobile: {
-    label: 'Mobile',
+  revenue: {
+    label: 'Revenue',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
 
-export function BarGraph() {
+export function BarGraph({ data }: { data: MonthlyBookingStat[] }) {
+  const totalBookings = data.reduce((sum, item) => sum + item.bookings, 0);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          Bar Chart - Multiple
+          Monthly Bookings
           <Badge variant='outline'>
-            <Icons.trendingDown />
-            -5.2%
+            <Icons.calendar />
+            {totalBookings}
           </Badge>
         </CardTitle>
-        <CardDescription>January - June 2025</CardDescription>
+        <CardDescription>Bookings and completed revenue for the last 6 months</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
+          <BarChart accessibilityLayer data={data}>
             <rect
               x='0'
               y='0'
@@ -70,15 +69,15 @@ export function BarGraph() {
               content={<ChartTooltipContent indicator='dashed' hideLabel />}
             />
             <Bar
-              dataKey='desktop'
+              dataKey='bookings'
               color='var(--chart-1)'
-              fill='var(--color-desktop)'
+              fill='var(--color-bookings)'
               shape={<CustomHatchedBar isHatched={false} />}
               radius={4}
             />
             <Bar
-              dataKey='mobile'
-              fill='var(--color-mobile)'
+              dataKey='revenue'
+              fill='var(--color-revenue)'
               shape={<CustomHatchedBar />}
               radius={4}
             />

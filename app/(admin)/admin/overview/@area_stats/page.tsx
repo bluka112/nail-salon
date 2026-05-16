@@ -1,7 +1,7 @@
-import { delay } from '@/constants/mock-api';
 import { AreaGraph } from '@/features/overview/components/area-graph';
+import { getMonthlyBookingStats } from '@/features/overview/data';
 
 export default async function AreaStats() {
-  await delay(2000);
-  return <AreaGraph />;
+  const data = await getMonthlyBookingStats();
+  return <AreaGraph data={data} />;
 }

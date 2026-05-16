@@ -10,8 +10,16 @@ import {
 } from '@/components/ui/card';
 import { Icons } from '@/components/icons';
 import React from 'react';
+import { getOverviewSummary } from '@/features/overview/data';
 
-export default function OverViewLayout({
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD'
+});
+
+const numberFormatter = new Intl.NumberFormat('en-US');
+
+export default async function OverViewLayout({
   sales,
   pie_stats,
   bar_stats,
@@ -22,92 +30,94 @@ export default function OverViewLayout({
   bar_stats: React.ReactNode;
   area_stats: React.ReactNode;
 }) {
+  const summary = await getOverviewSummary();
+
   return (
     <PageContainer>
       <div className='flex flex-1 flex-col space-y-2'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-2xl font-bold tracking-tight'>Hi, Welcome back 👋</h2>
+          <h2 className='text-2xl font-bold tracking-tight'>Elegance Overview</h2>
         </div>
 
         <div className='*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs md:grid-cols-2 lg:grid-cols-4'>
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>Total Revenue</CardDescription>
+              <CardDescription>Completed Revenue</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                $1,250.00
+                {currencyFormatter.format(summary.totalRevenue)}
               </CardTitle>
               <CardAction>
                 <Badge variant='outline'>
-                  <Icons.trendingUp />
-                  +12.5%
+                  <Icons.creditCard />
+                  {currencyFormatter.format(summary.monthRevenue)}
                 </Badge>
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
               <div className='line-clamp-1 flex gap-2 font-medium'>
-                Trending up this month <Icons.trendingUp className='size-4' />
+                Completed bookings only <Icons.circleCheck className='size-4' />
               </div>
-              <div className='text-muted-foreground'>Visitors for the last 6 months</div>
+              <div className='text-muted-foreground'>This month in the badge</div>
             </CardFooter>
           </Card>
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>New Customers</CardDescription>
+              <CardDescription>Upcoming Bookings</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                1,234
+                {numberFormatter.format(summary.upcomingBookings)}
               </CardTitle>
               <CardAction>
                 <Badge variant='outline'>
-                  <Icons.trendingDown />
-                  -20%
+                  <Icons.calendar />
+                  {numberFormatter.format(summary.monthBookings)}
                 </Badge>
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
               <div className='line-clamp-1 flex gap-2 font-medium'>
-                Down 20% this period <Icons.trendingDown className='size-4' />
+                Pending and confirmed appointments <Icons.clock className='size-4' />
               </div>
-              <div className='text-muted-foreground'>Acquisition needs attention</div>
+              <div className='text-muted-foreground'>This month total in the badge</div>
             </CardFooter>
           </Card>
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>Active Accounts</CardDescription>
+              <CardDescription>Customers</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                45,678
+                {numberFormatter.format(summary.uniqueCustomers)}
               </CardTitle>
               <CardAction>
                 <Badge variant='outline'>
-                  <Icons.trendingUp />
-                  +12.5%
+                  <Icons.building />
+                  {numberFormatter.format(summary.activeBranches)}
                 </Badge>
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
               <div className='line-clamp-1 flex gap-2 font-medium'>
-                Strong user retention <Icons.trendingUp className='size-4' />
+                Unique booking emails <Icons.teams className='size-4' />
               </div>
-              <div className='text-muted-foreground'>Engagement exceed targets</div>
+              <div className='text-muted-foreground'>Active branches in the badge</div>
             </CardFooter>
           </Card>
           <Card className='@container/card'>
             <CardHeader>
-              <CardDescription>Growth Rate</CardDescription>
+              <CardDescription>Active Services</CardDescription>
               <CardTitle className='text-2xl font-semibold tabular-nums @[250px]/card:text-3xl'>
-                4.5%
+                {numberFormatter.format(summary.activeServices)}
               </CardTitle>
               <CardAction>
                 <Badge variant='outline'>
-                  <Icons.trendingUp />
-                  +4.5%
+                  <Icons.employee />
+                  {numberFormatter.format(summary.activeEmployees)}
                 </Badge>
               </CardAction>
             </CardHeader>
             <CardFooter className='flex-col items-start gap-1.5 text-sm'>
               <div className='line-clamp-1 flex gap-2 font-medium'>
-                Steady performance increase <Icons.trendingUp className='size-4' />
+                Bookable active service catalog <Icons.sparkles className='size-4' />
               </div>
-              <div className='text-muted-foreground'>Meets growth projections</div>
+              <div className='text-muted-foreground'>Active employees in the badge</div>
             </CardFooter>
           </Card>
         </div>
