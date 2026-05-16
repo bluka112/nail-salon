@@ -2,6 +2,44 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+const bookingStatuses = new Set([
+  "pending",
+  "confirmed",
+  "completed",
+  "cancelled",
+]);
+
+type BookingRequestBody = {
+  customerName?: unknown;
+  customerEmail?: unknown;
+  customerPhone?: unknown;
+  date?: unknown;
+  time?: unknown;
+  notes?: unknown;
+  status?: unknown;
+  branchId?: unknown;
+  employeeId?: unknown;
+  services?: unknown;
+};
+
+function badRequest(message: string) {
+  return NextResponse.json(
+    { success: false, message, booking: null },
+    { status: 400 },
+  );
+}
+
+function getString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function parseBookingDate(value: unknown) {
+  if (typeof value !== "string" && !(value instanceof Date)) return null;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export const GET = async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
   const page = Number(params.get("page") ?? 1);
@@ -54,13 +92,68 @@ export const GET = async (req: NextRequest) => {
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { branchId, employeeId, services, ...rest } = await req.json();
+    const body = (await req.json()) as BookingRequestBody;
+    const customerName = getString(body.customerName);
+    const customerEmail = getString(body.customerEmail);
+    const customerPhone = getString(body.customerPhone);
+    const time = getString(body.time);
+    const branchId = getString(body.branchId);
+    const employeeId = getString(body.employeeId);
+    const notes = getString(body.notes);
+    const status = getString(body.status) || "pending";
+    const date = parseBookingDate(body.date);
 
-    // Calculate total price and duration from services
-    const serviceIds = services.map((s: { serviceId: string }) => s.serviceId);
-    const serviceDetails = await prisma.service.findMany({
-      where: { id: { in: serviceIds } },
-    });
+    if (!customerName) return badRequest("customerName is required");
+    if (!customerEmail) return badRequest("customerEmail is required");
+    if (!customerPhone) return badRequest("customerPhone is required");
+    if (!branchId) return badRequest("branchId is required");
+    if (!date) return badRequest("date must be a valid date");
+    if (!/^\d{2}:\d{2}$/.test(time)) {
+      return badRequest("time must use HH:mm format");
+    }
+    if (!bookingStatuses.has(status)) {
+      return badRequest("status is invalid");
+    }
+    if (!Array.isArray(body.services) || body.services.length === 0) {
+      return badRequest("At least one service is required");
+    }
+
+    const serviceIds = [
+      ...new Set(
+        body.services.map((service) =>
+          typeof service === "object" && service !== null
+            ? getString((service as { serviceId?: unknown }).serviceId)
+            : "",
+        ),
+      ),
+    ].filter(Boolean);
+
+    if (serviceIds.length === 0) {
+      return badRequest("Each service must include a serviceId");
+    }
+
+    const [branch, employee, serviceDetails] = await Promise.all([
+      prisma.branch.findUnique({ where: { id: branchId } }),
+      employeeId
+        ? prisma.employee.findFirst({
+            where: { id: employeeId, branchId, status: "active" },
+          })
+        : Promise.resolve(null),
+      prisma.service.findMany({
+        where: { id: { in: serviceIds }, status: "active" },
+      }),
+    ]);
+
+    if (!branch) return badRequest("Branch not found");
+    if (employeeId && !employee) {
+      return badRequest("Employee not found for selected branch");
+    }
+
+    if (serviceDetails.length !== serviceIds.length) {
+      const foundIds = new Set(serviceDetails.map((service) => service.id));
+      const missingIds = serviceIds.filter((id) => !foundIds.has(id));
+      return badRequest(`Service not found or inactive: ${missingIds.join(", ")}`);
+    }
 
     const totalPrice = serviceDetails.reduce((sum, s) => sum + s.price, 0);
     const totalDuration = serviceDetails.reduce(
@@ -70,7 +163,13 @@ export const POST = async (req: NextRequest) => {
 
     const booking = await prisma.booking.create({
       data: {
-        ...rest,
+        customerName,
+        customerEmail,
+        customerPhone,
+        date,
+        time,
+        notes: notes || null,
+        status: status as "pending" | "confirmed" | "completed" | "cancelled",
         totalPrice,
         totalDuration,
         branch: { connect: { id: branchId } },
